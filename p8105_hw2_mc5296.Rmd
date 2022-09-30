@@ -79,16 +79,17 @@ reformed_data %>%
   filter(route_name == "A")%>%
   distinct()
 reformed_data %>%
-  select(line,station_name,route_name,vending)%>%
+  select(line,station_name,route_name,ada)%>%
   filter(route_name == "A")%>%
-  filter(vending == "YES")%>%
+  filter(ada == TRUE)%>%
   distinct()
 
 ```
-Answer: 60 distinct stations serve A train, 50 has ADA Compliant.
+Answer: 60 distinct stations serve A train, 17 has ADA Compliant.
 
 
 # Problem 2
+## import data
 ```{r}
 raw_data2<-readxl::read_xlsx("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx")
 raw_data2
