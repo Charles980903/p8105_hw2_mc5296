@@ -4,9 +4,92 @@ output: github_document
 date: "2022-09-30"
 ---
 
+# Problem 1 
+
+## import data
+
 ```{r}
+raw_data = read.csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+raw_data
+```
+## clean data
+```{r}
+raw_data$Route8 <- as.character(raw_data$Route8)
+raw_data$Route9 <- as.character(raw_data$Route9)
+raw_data$Route10 <- as.character(raw_data$Route10)
+raw_data$Route11<- as.character(raw_data$Route11)
+raw_data
+data = raw_data%>%
+  janitor::clean_names() %>% 
+  select(line:entry,vending,ada) %>%
+  mutate(
+    entry = recode(entry, "YES" = 1, "NO" = 0),
+    entry = factor(entry)
+    )
+  
+data
+```
+The original dataset is a 1868 * 32 dataset. It contains 
+1)The name and location of the station of the entrances
+2)the route that stop at the stations
+3)the stations' entrance type
+4)whether it is a entry or exit only
+5)whether there is a vending machine
+6)the staffing condition 
+7)Whether there is free corssover
+8)location of the entrance 
+The first step is to convert the type of route8-route11 to character.
+And I used clean_names() to clean up the column names. Then I selected the required columns and convert the entry variable to logical value. 
+The results is a 1868 * 19 dataset
+
+## How many distinct stations are there?
+```{r}
+data %>%
+  select(line, station_name)%>%
+  distinct()
+```
+Answer: there are 465 distinct stations
+## How many stations are ADA compliant?
+```{r}
+data %>%
+  filter(ada == TRUE) %>%
+  distinct()
 
 ```
+Answer: 179 stations are ADA compliant.
 
-## R Markdown
+## What proportion of station entrances / exits without vending allow entrance?
+```{r}
+data %>%
+  filter(vending == "NO")
+```
+```{r}
+183/1868 *100
+```
+Answer: 9.79% of the entrances/exits without vending machine allow entrance
 
+## reformat the table to make route number and route name  distinct variables
+```{r}
+reformed_data <- data %>%
+  pivot_longer(route1:route11,
+               names_to = "route_number",
+               values_to = "route_name")
+reformed_data %>%
+  select(line,station_name,route_name)%>%
+  filter(route_name == "A")%>%
+  distinct()
+reformed_data %>%
+  select(line,station_name,route_name,vending)%>%
+  filter(route_name == "A")%>%
+  filter(vending == "YES")%>%
+  distinct()
+
+```
+Answer: 60 distinct stations serve A train, 50 has ADA Compliant.
+
+
+# Problem 2
+```{r}
+raw_data2<-readxl::read_xlsx("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx")
+raw_data2
+```
