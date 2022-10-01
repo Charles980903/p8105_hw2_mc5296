@@ -9,6 +9,7 @@ date: "2022-09-30"
 ## import data
 
 ```{r}
+library{tidyverse}
 raw_data = read.csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
 raw_data
 ```
@@ -91,6 +92,20 @@ Answer: 60 distinct stations serve A train, 17 has ADA Compliant.
 # Problem 2
 ## import data
 ```{r}
-raw_data2<-readxl::read_xlsx("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx")
+library(readxl)
+raw_data2 <- read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+                        sheet = "Mr. Trash Wheel")
 raw_data2
+```
+## clean data
+```{r}
+data <- raw_data2 %>%
+  janitor::clean_names()%>%
+  select(1:14)%>%
+  na.omit()%>%
+  rename(Dumpster_number = dumpster)%>%
+  as.integer(unlist(sports_ball))
+
+  
+data
 ```
