@@ -10,22 +10,21 @@ date: "2022-09-30"
 
 ```{r}
 library(tidyverse)
-raw_data = read.csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+library(readxl)
+raw_data = read_csv(
+    "data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
+    col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c"))
 head(raw_data)
+nrow(raw_data)
+ncol(raw_data)
 ```
 ## clean data
 ```{r}
-raw_data$Route8 <- as.character(raw_data$Route8)
-raw_data$Route9 <- as.character(raw_data$Route9)
-raw_data$Route10 <- as.character(raw_data$Route10)
-raw_data$Route11<- as.character(raw_data$Route11)
-summary(raw_data)
 data = raw_data%>%
   janitor::clean_names() %>% 
   select(line:entry,vending,ada) %>%
   mutate(
-    entry = recode(entry, "YES" = 1, "NO" = 0),
-    entry = factor(entry)
+    entry = recode(entry, "YES" = TRUE, "NO" = FALSE),
     )
   
 summary(data)
@@ -39,6 +38,7 @@ The original dataset is a 1868 * 32 dataset. It contains
 6)the staffing condition 
 7)Whether there is free corssover
 8)location of the entrance 
+At first, the data is not tidy.The type of the route variable are not the same.
 The first step is to convert the type of route8-route11 to character.
 And I used clean_names() to clean up the column names. Then I selected the required columns and convert the entry variable to logical value. 
 The results is a 1868 * 19 dataset
@@ -55,22 +55,23 @@ Answer: there are 465 distinct stations
 ```{r}
 data %>%
   filter(ada == TRUE) %>%
+  select(line,station_name) %>%
   distinct()%>%
   nrow()
 
 ```
-Answer: 179 stations are ADA compliant.
+Answer: 84 stations are ADA compliant.
 
 ## What proportion of station entrances / exits without vending allow entrance?
 ```{r}
 data %>%
   filter(vending == "NO")%>%
-  nrow()
+  pull(entry)%>%
+  mean()
 ```
-```{r}
-183/1868 *100
-```
-Answer: 9.79% of the entrances/exits without vending machine allow entrance
+
+
+Answer: 37.7% of the entrances/exits without vending machine allow entrance
 
 ## reformat the table to make route number and route name  distinct variables
 ```{r}
@@ -97,7 +98,6 @@ Answer: 60 distinct stations serve A train, 17 has ADA Compliant.
 # Problem 2
 ## import data
 ```{r}
-library(readxl)
 raw_data2 <- read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
                         sheet = "Mr. Trash Wheel")
 head(raw_data2)
@@ -160,3 +160,85 @@ filtered_data <- data %>%
 sum(filtered_data$sports_balls)
 ```
 Answer: Number of sports balls collected by Mr. Trash Wheel in 2020 is 856.
+
+# Problem 3
+## import data
+```{r}
+raw_data4 <- read.csv("data/pols-month.csv")
+ncol(raw_data4)
+nrow(raw_data4)
+raw_data5 <- read.csv("data/snp.csv")
+ncol(raw_data5)
+nrow(raw_data5)
+raw_data6 <- read.csv("data/unemployment.csv")
+ncol(raw_data6)
+nrow(raw_data6)
+```
+## clean pols-month data
+```{r}
+pols_month_data <- raw_data4%>%
+  janitor::clean_names()%>%
+  separate(mon, into = c("year","month","day"),sep = "-" )%>%
+  mutate(
+    month = recode(month, "01" = "Jan","02" = "Feb", "03" = "Mar", "04" = "Apr",
+                   "05" = "May", "06" = "Jun", "07" = "Jul", "08" = "Aug", 
+                   "09" = "Sept", "10" = "Oct", "11" = "Nov", "12" = "Dec") #change the months' name
+  )%>%
+  mutate( 
+    president = ifelse( prez_gop == 0, 'dem', 'gop'  ) # use president taking value gop and dem
+    ) %>%
+   select(-prez_dem,-prez_gop,-day)
+head(pols_month_data)
+
+
+```
+## clean snp data
+```{r}
+snp_data <- raw_data5%>%
+  janitor::clean_names()%>%
+   separate(date, into = c("month","day","year"),sep = "/")
+   snp_data$month <- as.integer(snp_data$month)
+   snp_data$year <- as.integer(snp_data$year)
+   snp_data$day <- as.integer(snp_data$day)
+snp_data <-  snp_data %>%
+  mutate(
+    year = ifelse(year<=20,year+2000,year+1900)
+  )%>%
+  arrange(year,month)%>%
+  mutate(
+    month = recode(month, "1" = "Jan","2" = "Feb", "3" = "Mar", "4" = "Apr",
+                   "5" = "May", "6" = "Jun", "7" = "Jul", "8" = "Aug", 
+                   "9" = "Sept", "10" = "Oct", "11" = "Nov", "12" = "Dec")
+  )%>%
+  select(year, month, close)
+head(snp_data)
+tail(snp_data)
+```
+
+## tidy unemployment data
+```{r}
+unemployment_data <- raw_data6 %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    jan : dec, 
+    names_to = "month",
+    values_to = "unemployment"
+  )%>%
+  mutate(
+    month = recode(month, "jan" = "Jan","feb" = "Feb", "mar" = "Mar", "apr" = "Apr",
+                   "may" = "May", "jun" = "Jun", "jul" = "Jul", "aug" = "Aug", 
+                   "sept" = "Sept", "oct" = "Oct", "nov" = "Nov", "dec" = "Dec")
+  )
+
+head(unemployment_data)
+tail(unemployment_data)
+```
+
+## Join datasets
+```{r}
+pols_month_data$year <- as.numeric(pols_month_data$year)# Convert character variable to numeric variable
+Joined_data <- full_join(pols_month_data, snp_data) %>%
+  full_join(unemployment_data)
+head(Joined_data)
+```
+The "pols_month" data is an 822 * 9 datasets which records the number of GOPs and DEMs in the government, the senate and  the House of Representatives from 1947 to 2015 and the party of the president of the time. The snp data is a 787 * 2 data which shows the Stock market closing index at the beginning of every month from 1950 to 2015. And the unemployment data is a 68 * 13 data decribes the unemployment in each month of the year from 1948 to 2015. The result dataset describes the number of people of each party of the U.S. government, the Senate, the House of Representatives, and the President's party, the stock market closing index, and the unemployment rate monthly from 1947 to 2015.Information of some months may not be included.
