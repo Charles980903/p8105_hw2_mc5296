@@ -99,7 +99,8 @@ Answer: 60 distinct stations serve A train, 17 has ADA Compliant.
 ## import data
 ```{r}
 raw_data2 <- read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
-                        sheet = "Mr. Trash Wheel")
+                        sheet = "Mr. Trash Wheel",
+                        skip = 1)
 head(raw_data2)
 ```
 ## clean data
@@ -110,16 +111,24 @@ data <- raw_data2 %>%
   na.omit()%>%  # remove non dumpster-specific rows
   rename("Dumpster number" = dumpster, 
          "Weight(tons)" = weight_tons,
-         "Volume(cubic yards)" = volume_cubic_yards) 
-data$sports_balls <- round (data$sports_balls, 0) # round the variable to the nearest integer.
-data$sports_balls <- as.integer(data$sports_balls) # round the number of sports balls to the nearest integer and convert the type to integer. 
+         "Volume(cubic yards)" = volume_cubic_yards,
+         "Number_of_plastic_Bottles" = plastic_bottles,
+         "Number_of_Polystyrene" = polystyrene,
+         "Number_of_Cigarette_Butts" = cigarette_butts,
+         "Number_of_Grocery_bags" = grocery_bags,
+         "Number_of_Chip_bags" = chip_bags,
+         "Number_of_Sports_balls" = sports_balls
+         ) 
+data$Number_of_Sports_balls <- round (data$Number_of_Sports_balls, 0) # round the variable to the nearest integer.
+data$Number_of_Sports_balls<- as.integer(data$Number_of_Sports_balls) # round the number of sports balls to the nearest integer and convert the type to integer. 
 head(data)
 ```
 ## import Professor Trash Wheel data
 
 ```{r}
 raw_data3 <- read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
-                        sheet = "Professor Trash Wheel")
+                        sheet = "Professor Trash Wheel",
+                        skip = 1)
 raw_data3
 ```
 ## clean data
@@ -130,10 +139,16 @@ data2 <- raw_data3 %>%
   na.omit()%>%  # remove non dumpster-specific rows
   rename("Dumpster number" = dumpster, 
          "Weight(tons)" = weight_tons,
-         "Volume(cubic yards)" = volume_cubic_yards) 
+         "Volume(cubic yards)" = volume_cubic_yards,
+        "Number_of_plastic_Bottles" = plastic_bottles,
+         "Number_of_Polystyrene" = polystyrene,
+         "Number_of_Cigarette_Butts" = cigarette_butts,
+         "Number_of_Grocery_bags" = grocery_bags,
+         "Number_of_Chip_bags" = chip_bags,
+         "Number_of_Sports_balls" = sports_balls)
 data2$'Dumpster number'<- as.character(data2$'Dumpster number')
-data2$sports_balls <- round (data2$sports_balls, 0) # round the variable to the nearest integer.
-data2$sports_balls <- as.integer(data2$sports_balls) # round the number of sports balls to the nearest integer and convert the type to integer. 
+data2$Number_of_Sports_balls <- round (data2$Number_of_Sports_balls, 0) # round the variable to the nearest integer.
+data2$Number_of_Sports_balls <- as.integer(data2$Number_of_Sports_balls) # round the number of sports balls to the nearest integer and convert the type to integer. 
 data2
 ```
 
@@ -154,10 +169,10 @@ sum(data2$`Weight(tons)`)
 Answer: The total weight of trash collected by Professor Trash Wheel is 135.5 tons
 ```{r}
 filtered_data <- data %>%
-  select(sports_balls, year)%>%
+  select(Number_of_Sports_balls, year)%>%
   filter(year == 2020)  #create a table store the amount of sports balls collected in each day in 2020.
 
-sum(filtered_data$sports_balls)
+sum(filtered_data$Number_of_Sports_balls)
 ```
 Answer: Number of sports balls collected by Mr. Trash Wheel in 2020 is 856.
 
